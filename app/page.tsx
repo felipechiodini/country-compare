@@ -1,65 +1,135 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useMemo } from "react";
+import SalaryInputs from "@/components/SalaryInputs";
+import { BrazilTaxBreakdown, IrelandTaxBreakdown } from "@/components/TaxBreakdown";
+import CostOfLiving from "@/components/CostOfLiving";
+import Benefits from "@/components/Benefits";
+import PowerComparison from "@/components/PowerComparison";
+import { calcBrazil, calcIreland, Period } from "@/lib/calculations";
+
+const DEFAULT_BRAZIL = "15000";
+const DEFAULT_IRELAND = "80000";
 
 export default function Home() {
+  const [brazilMonthly, setBrazilMonthly] = useState(DEFAULT_BRAZIL);
+  const [irelandAnnual, setIrelandAnnual] = useState(DEFAULT_IRELAND);
+  const [period, setPeriod] = useState<Period>("monthly");
+
+  const brazil = useMemo(() => calcBrazil(Number(brazilMonthly) || 0), [brazilMonthly]);
+  const ireland = useMemo(() => calcIreland(Number(irelandAnnual) || 0), [irelandAnnual]);
+
+  const hasValues = Number(brazilMonthly) > 0 && Number(irelandAnnual) > 0;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">💻</span>
+            <div>
+              <h1 className="font-bold text-gray-900 leading-tight">Dev Internacional</h1>
+              <p className="text-xs text-gray-600">
+                Calculadora de salário — Brasil 🇧🇷 vs Irlanda 🇮🇪
+              </p>
+            </div>
+          </div>
+
+          {hasValues && (
+            <div className="flex items-center bg-gray-100 rounded-xl p-1">
+              <button
+                onClick={() => setPeriod("monthly")}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  period === "monthly"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Mensal
+              </button>
+              <button
+                onClick={() => setPeriod("annual")}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  period === "annual"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Anual
+              </button>
+            </div>
+          )}
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+        <section>
+          <p className="text-gray-600 mb-6 text-sm">
+            Compare seu salário de desenvolvedor entre Brasil e Irlanda — impostos,
+            custo de vida, benefícios e poder de compra real.
+          </p>
+          <SalaryInputs
+            brazilMonthly={brazilMonthly}
+            irelandAnnual={irelandAnnual}
+            onBrazilChange={setBrazilMonthly}
+            onIrelandChange={setIrelandAnnual}
+          />
+        </section>
+
+        {hasValues && (
+          <>
+            <section>
+              <h2 className="text-base font-semibold text-gray-700 mb-4">
+                Impostos e deduções
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <BrazilTaxBreakdown r={brazil} period={period} />
+                <IrelandTaxBreakdown r={ireland} period={period} />
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-base font-semibold text-gray-700 mb-4">
+                Poder de compra
+              </h2>
+              <PowerComparison brazil={brazil} ireland={ireland} period={period} />
+            </section>
+
+            <section>
+              <h2 className="text-base font-semibold text-gray-700 mb-4">
+                Custo de vida
+              </h2>
+              <CostOfLiving brazil={brazil} ireland={ireland} period={period} />
+            </section>
+
+            <section>
+              <h2 className="text-base font-semibold text-gray-700 mb-4">
+                Benefícios trabalhistas
+              </h2>
+              <Benefits />
+            </section>
+          </>
+        )}
+
+        {!hasValues && (
+          <div className="text-center py-16 text-gray-500">
+            <p className="text-4xl mb-3">⬆️</p>
+            <p>Preencha os salários acima para ver a comparação</p>
+          </div>
+        )}
+      </main>
+
+      <footer className="border-t border-gray-200 bg-white mt-12">
+        <div className="max-w-5xl mx-auto px-4 py-5 text-xs text-gray-500 text-center space-y-1">
+          <p>
+            Câmbio: R$6,20/€1 · Tabelas: IRPF/INSS 2024 · Irlanda: PAYE/USC/PRSI 2025
+          </p>
+          <p>
+            Valores estimados para fins de comparação. Consulte um contador para decisões
+            reais.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </footer>
     </div>
   );
 }
