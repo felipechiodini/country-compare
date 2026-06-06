@@ -17,22 +17,22 @@ const APP_URL = "http://compara-pais.fcbsolucoesweb.com.br/";
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: "Comparar Países — Calculadora de Salário para Devs",
+    default: "Comparar Países — Calculadora de Salário",
     template: "%s | Comparar Países",
   },
   description:
-    "Compare salários de desenvolvedor entre Brasil (CLT e PJ), Irlanda e outros países. Calcule impostos, custo de vida, poder de compra (PPP) e benefícios trabalhistas.",
+    "Compare salários entre países — Brasil (CLT e PJ), Irlanda, Portugal e outros. Calcule impostos, custo de vida e poder de compra.",
   keywords: [
-    "salário desenvolvedor",
     "comparar salário exterior",
-    "salário dev brasil irlanda",
+    "salário brasil irlanda portugal",
     "CLT vs PJ",
     "IRPF INSS simulador",
     "PAYE USC Irlanda",
-    "custo de vida Dublin",
+    "IRS Portugal",
+    "custo de vida exterior",
     "poder de compra PPP",
     "trabalhar fora",
-    "dev internacional",
+    "comparar países",
   ],
   authors: [{ name: "Comparar Países" }],
   creator: "Comparar Países",
@@ -41,9 +41,9 @@ export const metadata: Metadata = {
     locale: "pt_BR",
     url: APP_URL,
     siteName: "Comparar Países",
-    title: "Comparar Países — Calculadora de Salário para Devs",
+    title: "Comparar Países — Calculadora de Salário",
     description:
-      "Compare salários de desenvolvedor entre Brasil (CLT e PJ), Irlanda e outros países. Impostos, custo de vida e poder de compra real.",
+      "Compare salários entre países — impostos reais, custo de vida e poder de compra.",
     images: [
       {
         url: "/og-image.png",
@@ -55,9 +55,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Comparar Países — Calculadora de Salário para Devs",
+    title: "Comparar Países — Calculadora de Salário",
     description:
-      "Compare CLT, PJ (Brasil) e PAYE (Irlanda). Impostos reais, custo de vida e poder de compra.",
+      "Compare CLT, PJ (Brasil), PAYE (Irlanda) e Portugal. Impostos reais, custo de vida e poder de compra.",
     images: ["/og-image.png"],
   },
   robots: {
