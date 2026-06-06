@@ -20,7 +20,7 @@ export interface CountryResult {
 }
 
 export interface CostItem {
-  label: string;
+  id: string;
   monthly: number; // in local currency
 }
 
@@ -32,11 +32,10 @@ export interface CountryConfig {
   modalityNote?: string;    // short description shown in the select
   currency: string;         // "BRL", "EUR" …
   currencySymbol: string;   // "R$", "€" …
-  city: string;
-  inputLabel: string;
+  inputLabelBase: string;  // e.g. "Salário bruto" — period suffix added by the component
   inputPlaceholder: string;
   inputPeriod: "monthly" | "annual";
-  eurPerUnit: number;            // 1 local unit → how many EUR
+  baseRate: number;              // 1 local unit → common base (USD-ish) for cross-currency math
   purchasingPowerIndex: number;  // World Bank PPP, US = 100
   costOfLiving: CostItem[];
   benefits: Record<string, { description: string; positive: boolean }>;

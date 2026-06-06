@@ -1,22 +1,19 @@
 "use client";
 
 import { CountryConfig, CountryResult, Period, TaxLine } from "@/lib/types";
+import { ComparisonCurrency } from "@/lib/currencies";
 
 function fmt(v: number, symbol: string) {
   return `${symbol} ${v.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}`;
 }
 
-function fmtEUR(v: number) {
-  return `€ ${v.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}`;
-}
-
 interface RowProps {
   line: TaxLine;
   symbol: string;
-  sign?: string;
+  toComp: (v: number) => number;
 }
 
-function Row({ line, symbol, sign }: RowProps) {
+function Row({ line, symbol, toComp }: RowProps) {
   const isDeduction = line.type === "deduction";
   const isCredit = line.type === "credit";
   const isExtra = line.type === "extra";
@@ -24,25 +21,23 @@ function Row({ line, symbol, sign }: RowProps) {
   const isGross = line.type === "gross";
 
   const valueColor = isDeduction
-    ? "text-red-600"
-    : isCredit || isExtra
-    ? "text-emerald-700"
+    ? "text-red-600 dark:text-red-400"
     : isNet || isGross
-    ? "text-gray-900"
-    : "text-gray-800";
+    ? "text-gray-900 dark:text-white"
+    : "text-gray-700 dark:text-gray-300";
 
   const prefix = isDeduction ? "− " : isCredit || isExtra ? "+ " : "";
 
   return (
     <div className={`flex justify-between items-center py-2 px-3 rounded-lg ${isNet || isGross ? "font-semibold" : ""}`}>
-      <span className={`text-sm ${isNet || isGross ? "font-semibold text-gray-900" : "text-gray-700"}`}>
+      <span className={`text-sm ${isNet || isGross ? "font-semibold text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"}`}>
         {line.label}
         {line.sublabel && (
-          <span className="block text-xs text-gray-600 font-normal">{line.sublabel}</span>
+          <span className="block text-xs text-gray-500 dark:text-gray-400 font-normal">{line.sublabel}</span>
         )}
       </span>
       <span className={`text-sm font-medium ${valueColor}`}>
-        {prefix}{fmt(line.value, symbol)}
+        {prefix}{fmt(toComp(line.value), symbol)}
       </span>
     </div>
   );
@@ -51,11 +46,11 @@ function Row({ line, symbol, sign }: RowProps) {
 function TaxBar({ rate, colorClass }: { rate: number; colorClass: string }) {
   return (
     <div className="mt-3">
-      <div className="flex justify-between text-xs text-gray-700 mb-1">
+      <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
         <span>Alíquota efetiva total</span>
         <span className="font-semibold">{(rate * 100).toFixed(1)}%</span>
       </div>
-      <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${colorClass}`} style={{ width: `${Math.min(rate * 100, 100)}%` }} />
       </div>
     </div>
@@ -66,24 +61,19 @@ interface Props {
   config: CountryConfig;
   result: CountryResult;
   period: Period;
-  bgClass: string;       // e.g. "bg-green-50 border-green-200"
-  headingClass: string;  // e.g. "text-green-900"
-  barColorClass: string; // e.g. "bg-green-500"
-  dividerClass: string;  // e.g. "border-green-200"
+  compCurrency: ComparisonCurrency;
+  bgClass: string;
+  headingClass: string;
+  barColorClass: string;
+  dividerClass: string;
 }
 
-export default function TaxBreakdown({ config, result, period, bgClass, headingClass, barColorClass, dividerClass }: Props) {
+export default function TaxBreakdown({ config, result, period, compCurrency, bgClass, headingClass, barColorClass, dividerClass }: Props) {
   const lines = period === "monthly" ? result.monthlyLines : result.annualLines;
-  const otherEurPerUnit = 1; // EUR is the reference
-  const netInEur = period === "monthly"
-    ? result.netMonthly * config.eurPerUnit
-    : result.netAnnual * config.eurPerUnit;
-  const suffix = period === "monthly" ? "/mês" : "/ano";
 
-  // Show cross-currency conversion only when currency isn't EUR
-  const showEurLine = config.currency !== "EUR";
+  const toComp = (v: number) => v * config.baseRate * compCurrency.rateFromBase;
+  const sym = compCurrency.symbol;
 
-  // Find net lines to insert dividers before them
   const netIndexes = new Set(lines.map((l, i) => l.type === "net" ? i : -1).filter(i => i >= 0));
 
   return (
@@ -98,20 +88,9 @@ export default function TaxBreakdown({ config, result, period, bgClass, headingC
             {netIndexes.has(i) && i > 0 && (
               <div className={`border-t my-2 ${dividerClass}`} />
             )}
-            <Row line={line} symbol={config.currencySymbol} />
+            <Row line={line} symbol={sym} toComp={toComp} />
           </div>
         ))}
-        {showEurLine && (
-          <Row
-            line={{
-              label: "Em euros",
-              sublabel: `câmbio 1 ${config.currency} = €${config.eurPerUnit.toFixed(3)}`,
-              value: netInEur,
-              type: "gross",
-            }}
-            symbol="€"
-          />
-        )}
       </div>
       <TaxBar rate={result.effectiveTaxRate} colorClass={barColorClass} />
     </div>

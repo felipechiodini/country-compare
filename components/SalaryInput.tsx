@@ -1,25 +1,31 @@
 "use client";
 
-import { CountryConfig } from "@/lib/types";
+import { CountryConfig, Period } from "@/lib/types";
+import { ComparisonCurrency } from "@/lib/currencies";
 
 interface Props {
   config: CountryConfig;
   value: string;
+  period: Period;
+  compCurrency: ComparisonCurrency;
   onChange: (v: string) => void;
-  accentClass: string; // e.g. "border-green-300 bg-green-50 focus:ring-green-400 text-green-900"
-  labelClass: string;  // e.g. "text-green-800"
-  noteClass: string;   // e.g. "text-green-600"
+  accentClass: string;
+  labelClass: string;
+  noteClass: string;
 }
 
-export default function SalaryInput({ config, value, onChange, accentClass, labelClass, noteClass }: Props) {
+export default function SalaryInput({ config, value, period, compCurrency, onChange, accentClass, labelClass, noteClass }: Props) {
+  const periodLabel = period === "monthly" ? "mensal" : "anual";
+  const sym = compCurrency.symbol;
+
   const displayValue = value
-    ? `${config.currencySymbol} ${Number(value).toLocaleString("pt-BR")}`
+    ? `${sym} ${Number(value).toLocaleString("pt-BR")}`
     : "";
 
   return (
     <div>
       <label className={`block text-sm font-medium mb-2 ${labelClass}`}>
-        {config.inputLabel} ({config.currencySymbol})
+        {config.inputLabelBase} {periodLabel} ({sym})
       </label>
       <input
         type="text"
@@ -29,12 +35,12 @@ export default function SalaryInput({ config, value, onChange, accentClass, labe
           const raw = e.target.value.replace(/\D/g, "");
           onChange(raw);
         }}
-        placeholder={`${config.currencySymbol} ${config.inputPlaceholder}`}
-        className={`w-full rounded-xl border px-4 py-3 text-lg font-semibold bg-white focus:outline-none focus:ring-2 ${accentClass}`}
+        placeholder={`${sym} ...`}
+        className={`w-full rounded-xl border px-4 py-3 text-lg font-semibold bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 ${accentClass}`}
       />
       <p className={`mt-2 text-xs ${noteClass}`}>
-        {config.inputPeriod === "monthly" ? "Valor mensal bruto" : "Valor anual bruto"} ·{" "}
-        {config.city}
+        Valor {periodLabel} bruto em {compCurrency.code}
+        {config.modalityNote && ` · ${config.modalityNote}`}
       </p>
     </div>
   );
