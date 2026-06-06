@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const APP_URL = "https://compararpaises.dev"; // troque pelo domínio real
+const APP_URL = "http://compara-pais.fcbsolucoesweb.com.br/";
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
